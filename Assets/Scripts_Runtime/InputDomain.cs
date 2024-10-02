@@ -12,14 +12,14 @@ public static class InputDomain {
         return Input.GetMouseButton(0);
     }
 
-    public static bool TryDrag(Transform target) {
+    public static bool TryDrag(Transform target, float distanceMax) {
         var isPressing = Input.GetMouseButton(0);
         if (!isPressing) {
             return false;
         }
         var mousePos = GetMousePos();
         var distance = Vector2.Distance(mousePos, target.position);
-        if (distance >= 0.5f) {
+        if (distance >= distanceMax) {
             return false;
         }
         target.position = mousePos;
