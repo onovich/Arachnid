@@ -8,6 +8,7 @@ public class Main : MonoBehaviour {
     Joint controllerPoint;
     Joint fixedPoint;
     Vector2 fixedPos;
+    public bool isSoftJoint;
 
     void Start() {
         if (joints == null || joints.Length == 0) {
@@ -45,7 +46,7 @@ public class Main : MonoBehaviour {
         for (int i = joints.Length - 1; i > 0; i--) {
             var current = joints[i].Pos;
             var r = joints[i].R;
-            var p = JointDomain.UpdateProjection(current, r, joints[i - 1].Pos);
+            var p = JointDomain.UpdateProjection(current, r, joints[i - 1].Pos, isSoftJoint);
             joints[i - 1].SetPos(p);
         }
     }
@@ -57,7 +58,7 @@ public class Main : MonoBehaviour {
         for (int i = 0; i < joints.Length - 1; i++) {
             var current = joints[i].Pos;
             var r = joints[i].R;
-            var p = JointDomain.UpdateProjection(current, r, joints[i + 1].Pos);
+            var p = JointDomain.UpdateProjection(current, r, joints[i + 1].Pos, isSoftJoint);
             joints[i + 1].SetPos(p);
         }
     }
