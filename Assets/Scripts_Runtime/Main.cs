@@ -5,52 +5,96 @@ using UnityEngine;
 public class Main : MonoBehaviour {
 
     public Joint[] joints;
-    Joint controllerPoint;
-    Joint fixedPoint;
-    Joint temp;
-    Vector2 fixedPos;
+    public float[] jointsDistance;
     public bool isSoftJoint;
-    bool isIK = true;
+    public int maxIterations = 10;
+    public float inputDistanceMax = 0.5f;
+    public bool isIK;
+
+    bool isReverse = true;
+    int controllerPointIndex;
+    Joint controllerPoint => joints[controllerPointIndex];
+    int fixedPointIndex;
+    Joint fixedPoint => joints[fixedPointIndex];
+    int temp;
+    Vector2 fixedPos;
+
+
+    float GetNextJointDistance(int jointIndex, bool isReverse) {
+        if (isReverse) {
+            if (jointIndex == 0) {
+                return 0;
+            }
+            return jointsDistance[jointIndex - 1];
+        } else {
+            if (jointIndex == joints.Length - 1) {
+                return 0;
+            }
+            return jointsDistance[jointIndex];
+        }
+    }
 
     void Start() {
         if (joints == null || joints.Length == 0) {
             return;
         }
-        fixedPoint = joints[0];
-        controllerPoint = joints[joints.Length - 1];
+        fixedPointIndex = 0;
+        controllerPointIndex = joints.Length - 1;
         fixedPoint.isFixedPoint = true;
         controllerPoint.isControllerPoint = true;
         fixedPos = fixedPoint.Pos;
+        if (isIK) {
+            JointDomain.UpdateJoints_IK(maxIterations, joints, (index, isReverse) => GetNextJointDistance(index, isReverse), fixedPoint, fixedPos, isReverse, isSoftJoint, true);
+        } else {
+            JointDomain.UpdateJoints_FK(joints, (index, isReverse) => GetNextJointDistance(index, isReverse), isReverse, isSoftJoint, true);
+        }
     }
 
     void Update() {
-        var isClickingC = InputDomain.IsClicking(controllerPoint.transform, controllerPoint.R);
+        var isClickingC = InputDomain.IsClicking(controllerPoint.transform, inputDistanceMax);
         if (isClickingC) {
             controllerPoint.SetPos(InputDomain.GetMousePos());
         } else {
-            var isClickingF = InputDomain.IsClicking(fixedPoint.transform, fixedPoint.R);
+            var isClickingF = InputDomain.IsClicking(fixedPoint.transform, inputDistanceMax);
             if (isClickingF) {
                 fixedPoint.SetPos(InputDomain.GetMousePos());
                 Swap();
-                isIK = !isIK;
+                isReverse = !isReverse;
             }
         }
-
-        int maxIterations = 10; // 最大迭代次数
-        JointDomain.UpdateJoints(maxIterations, joints, fixedPoint, fixedPos, isIK, isSoftJoint, isClickingC);
+        if (isIK) {
+            JointDomain.UpdateJoints_IK(maxIterations, joints, (index, isReverse) => GetNextJointDistance(index, isReverse), fixedPoint, fixedPos, isReverse, isSoftJoint, isClickingC);
+        } else {
+            JointDomain.UpdateJoints_FK(joints, (index, isReverse) => GetNextJointDistance(index, isReverse), isReverse, isSoftJoint, isClickingC);
+        }
     }
 
     void Swap() {
-        temp = fixedPoint;
-        fixedPoint = controllerPoint;
-        controllerPoint = temp;
+        temp = fixedPointIndex;
+        fixedPointIndex = controllerPointIndex;
+        controllerPointIndex = temp;
         fixedPos = fixedPoint.Pos;
     }
 
     void OnDestroy() {
-        fixedPoint = null;
-        controllerPoint = null;
-        temp = null;
+    }
+
+    void OnDrawGizmos() {
+        if (joints == null || joints.Length == 0) {
+            return;
+        }
+        for (int i = 0; i < joints.Length - 1; i++) {
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(joints[i].Pos, joints[i + 1].Pos);
+            if (i == 0) {
+                continue;
+            }
+            Gizmos.DrawCube(joints[i].Pos, Vector3.one * 0.2f);
+        }
+        Gizmos.color = Color.red;
+        Gizmos.DrawCube(fixedPoint.Pos, Vector3.one * 0.2f);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawCube(controllerPoint.Pos, Vector3.one * 0.2f);
     }
 
 }
