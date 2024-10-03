@@ -3,17 +3,14 @@ using UnityEngine;
 
 public static class JointDomain {
 
-    public static void UpdateJoints(int maxIterations, Joint[] joints, Joint fixedPoint, Vector2 fixedPos, bool isReverse, bool isSoftJoint, bool isDragging) {
+    public static void UpdateJoints(int maxIterations, Joint[] joints, Joint fixedPoint, Vector2 fixedPos, bool isIK, bool isSoftJoint, bool isDragging) {
         int iterations = 0;
-        if (isReverse) {
-            Array.Reverse(joints);
-        }
         while (isDragging && iterations < maxIterations) {
-            UpdateJoints_Fabric_Once(joints, true, isSoftJoint);
+            UpdateJoints_Fabric_Once(joints, isIK, isSoftJoint);
             iterations++;
 
             ResumeFixedPoint(fixedPos, fixedPoint);
-            UpdateJoints_Fabric_Once(joints, false, isSoftJoint);
+            UpdateJoints_Fabric_Once(joints, !isIK, isSoftJoint);
         }
     }
 

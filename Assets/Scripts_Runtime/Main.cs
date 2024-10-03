@@ -10,6 +10,7 @@ public class Main : MonoBehaviour {
     Joint temp;
     Vector2 fixedPos;
     public bool isSoftJoint;
+    bool isIK = true;
 
     void Start() {
         if (joints == null || joints.Length == 0) {
@@ -23,20 +24,20 @@ public class Main : MonoBehaviour {
     }
 
     void Update() {
-        var isClickingF = InputDomain.IsClicking(fixedPoint.transform, fixedPoint.R);
-        var isReverse = false;
-        if (isClickingF) {
-            fixedPoint.SetPos(InputDomain.GetMousePos());
-            Swap();
-            isReverse = true;
-        }
         var isClickingC = InputDomain.IsClicking(controllerPoint.transform, controllerPoint.R);
         if (isClickingC) {
             controllerPoint.SetPos(InputDomain.GetMousePos());
+        } else {
+            var isClickingF = InputDomain.IsClicking(fixedPoint.transform, fixedPoint.R);
+            if (isClickingF) {
+                fixedPoint.SetPos(InputDomain.GetMousePos());
+                Swap();
+                isIK = !isIK;
+            }
         }
 
         int maxIterations = 10; // 最大迭代次数
-        JointDomain.UpdateJoints(maxIterations, joints, fixedPoint, fixedPos, isReverse, isSoftJoint, isClickingC);
+        JointDomain.UpdateJoints(maxIterations, joints, fixedPoint, fixedPos, isIK, isSoftJoint, isClickingC);
     }
 
     void Swap() {
