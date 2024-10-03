@@ -7,7 +7,7 @@ public static class JointDomain {
         if (!isDragging) {
             return;
         }
-        UpdateJoints_Fabric_Once(joints, GetDistance, isReverse, isSoftJoint);
+        UpdateJoints_Once(joints, GetDistance, isReverse, isSoftJoint);
     }
 
     public static void UpdateJoints_IK(int maxIterations, Joint[] joints, Func<int, bool, float> GetDistance, Joint fixedPoint, Vector2 fixedPos, bool isReverse, bool isSoftJoint, bool isDragging) {
@@ -15,12 +15,13 @@ public static class JointDomain {
             return;
         }
         int iterations = 0;
+        // Fabric
         while (isDragging && iterations < maxIterations) {
-            UpdateJoints_Fabric_Once(joints, GetDistance, isReverse, isSoftJoint);
+            UpdateJoints_Once(joints, GetDistance, isReverse, isSoftJoint);
             iterations++;
 
             ResumeFixedPoint(fixedPos, fixedPoint);
-            UpdateJoints_Fabric_Once(joints, GetDistance, !isReverse, isSoftJoint);
+            UpdateJoints_Once(joints, GetDistance, !isReverse, isSoftJoint);
         }
     }
 
@@ -28,7 +29,7 @@ public static class JointDomain {
         fixedPoint.SetPos(fixedPos);
     }
 
-    static void UpdateJoints_Fabric_Once(Joint[] joints, Func<int, bool, float> GetDistance, bool isReverse, bool isSoftJoint) {
+    static void UpdateJoints_Once(Joint[] joints, Func<int, bool, float> GetDistance, bool isReverse, bool isSoftJoint) {
         if (joints == null || joints.Length == 0) {
             return;
         }

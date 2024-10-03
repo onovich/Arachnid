@@ -546,7 +546,7 @@ MonoBehaviour:
   - 2
   - 2
   isSoftJoint: 0
-  maxIterations: 10
+  maxIterations: 1
   inputDistanceMax: 0.5
   isIK: 0
 --- !u!1660057539 &9223372036854775807

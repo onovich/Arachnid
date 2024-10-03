@@ -9,8 +9,9 @@ public class Main : MonoBehaviour {
     public bool isSoftJoint;
     public int maxIterations = 10;
     public float inputDistanceMax = 0.5f;
-    public bool isIK;
+    public bool setIK;
 
+    bool isIK;
     bool isReverse = true;
     int controllerPointIndex;
     Joint controllerPoint => joints[controllerPointIndex];
@@ -19,6 +20,12 @@ public class Main : MonoBehaviour {
     int temp;
     Vector2 fixedPos;
 
+    void SetIK(bool isIK) {
+        if (this.isIK == false && isIK == true) {
+            fixedPos = fixedPoint.Pos;
+        }
+        this.isIK = isIK;
+    }
 
     float GetNextJointDistance(int jointIndex, bool isReverse) {
         if (isReverse) {
@@ -48,6 +55,7 @@ public class Main : MonoBehaviour {
         } else {
             JointDomain.UpdateJoints_FK(joints, (index, isReverse) => GetNextJointDistance(index, isReverse), isReverse, isSoftJoint, true);
         }
+        setIK = isIK;
     }
 
     void Update() {
@@ -62,6 +70,11 @@ public class Main : MonoBehaviour {
                 isReverse = !isReverse;
             }
         }
+
+        if (setIK != isIK) {
+            SetIK(setIK);
+        }
+
         if (isIK) {
             JointDomain.UpdateJoints_IK(maxIterations, joints, (index, isReverse) => GetNextJointDistance(index, isReverse), fixedPoint, fixedPos, isReverse, isSoftJoint, isClickingC);
         } else {
