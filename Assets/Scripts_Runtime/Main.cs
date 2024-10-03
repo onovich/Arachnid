@@ -7,6 +7,7 @@ public class Main : MonoBehaviour {
     public Joint[] joints;
     Joint controllerPoint;
     Joint fixedPoint;
+    Joint temp;
     Vector2 fixedPos;
     public bool isSoftJoint;
 
@@ -22,51 +23,33 @@ public class Main : MonoBehaviour {
     }
 
     void Update() {
-        var isDragging = InputDomain.TryDrag(controllerPoint.transform, controllerPoint.R);
+        var isClickingF = InputDomain.IsClicking(fixedPoint.transform, fixedPoint.R);
+        var isReverse = false;
+        if (isClickingF) {
+            fixedPoint.SetPos(InputDomain.GetMousePos());
+            Swap();
+            isReverse = true;
+        }
+        var isClickingC = InputDomain.IsClicking(controllerPoint.transform, controllerPoint.R);
+        if (isClickingC) {
+            controllerPoint.SetPos(InputDomain.GetMousePos());
+        }
+
         int maxIterations = 10; // 最大迭代次数
-        int iterations = 0;
-        while (isDragging && iterations < maxIterations) {
-            UpdateAllJoint_IK(isDragging);
-            iterations++;
-
-            ResumeFixedPoint();
-            UpdateAllJoint_FK(isDragging);
-        }
-        UpdateAllJoint_IK(isDragging);
+        JointDomain.UpdateJoints(maxIterations, joints, fixedPoint, fixedPos, isReverse, isSoftJoint, isClickingC);
     }
 
-    void ResumeFixedPoint() {
-        fixedPoint.SetPos(fixedPos);
+    void Swap() {
+        temp = fixedPoint;
+        fixedPoint = controllerPoint;
+        controllerPoint = temp;
+        fixedPos = fixedPoint.Pos;
     }
-
-    void UpdateAllJoint_IK(bool isDragging) {
-        if (!isDragging) {
-            return;
-        }
-        for (int i = joints.Length - 1; i > 0; i--) {
-            var current = joints[i].Pos;
-            var r = joints[i].R;
-            var p = JointDomain.UpdateProjection(current, r, joints[i - 1].Pos, isSoftJoint);
-            joints[i - 1].SetPos(p);
-        }
-    }
-
-    void UpdateAllJoint_FK(bool isDragging) {
-        if (!isDragging) {
-            return;
-        }
-        for (int i = 0; i < joints.Length - 1; i++) {
-            var current = joints[i].Pos;
-            var r = joints[i].R;
-            var p = JointDomain.UpdateProjection(current, r, joints[i + 1].Pos, isSoftJoint);
-            joints[i + 1].SetPos(p);
-        }
-    }
-
 
     void OnDestroy() {
         fixedPoint = null;
         controllerPoint = null;
+        temp = null;
     }
 
 }
