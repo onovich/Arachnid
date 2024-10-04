@@ -10,6 +10,7 @@ public class Main : MonoBehaviour {
     public int maxIterations = 10;
     public float inputDistanceMax = 0.5f;
     public bool setIK;
+    public StatePanel statePanel;
 
     bool isIK;
     bool isReverse = true;
@@ -24,7 +25,10 @@ public class Main : MonoBehaviour {
         if (this.isIK == false && isIK == true) {
             fixedPos = fixedPoint.Pos;
         }
-        this.isIK = isIK;
+        if (this.isIK != isIK) {
+            statePanel.SetText(isIK);
+            this.isIK = isIK;
+        }
     }
 
     float GetNextJointDistance(int jointIndex, bool isReverse) {
@@ -56,6 +60,7 @@ public class Main : MonoBehaviour {
             JointDomain.UpdateJoints_FK(joints, (index, isReverse) => GetNextJointDistance(index, isReverse), isReverse, isSoftJoint, true);
         }
         setIK = isIK;
+        statePanel.SetText(isIK);
     }
 
     void Update() {
@@ -69,6 +74,10 @@ public class Main : MonoBehaviour {
                 Swap();
                 isReverse = !isReverse;
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            setIK = !setIK;
         }
 
         if (setIK != isIK) {
